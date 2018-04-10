@@ -25,7 +25,7 @@ class SmearAndSample(object):
         src_dist = numpy.array([json.loads(line) for line in self.fsrc]).transpose()
         self.kernel = scipy.stats.gaussian_kde(src_dist)
 
-    def write(self, seed = None, output_file = None):
+    def write(self, z_position = 0., seed = None, output_file = None):
         if seed != None:
             numpy.random.seed(seed=seed)
         if output_file != None:
@@ -33,7 +33,7 @@ class SmearAndSample(object):
         hit_list = []
         self.tgt_dist = self.kernel.resample(self.n_events).transpose()
         for item in self.tgt_dist:
-            my_dict = {"mass":self.mu_mass, "pid":-13}
+            my_dict = {"mass":self.mu_mass, "pid":-13, "z":z_position}
             for i, key in enumerate(self.keys):
                 my_dict[key] = item[i]
             hit_list.append(Hit.new_from_dict(my_dict, "energy"))

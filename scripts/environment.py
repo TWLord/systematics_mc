@@ -70,7 +70,7 @@ class Environment(object):
         smear = smear_and_sample.SmearAndSample(self.beam_input_file, "", self.beam_format, self.n_events)
         for i in range(self.n_jobs):
             filename = self.get_beam_filename(i)
-            smear.write(i, filename)
+            smear.write(0., i, filename)
 
     def get_config(self, index, prefix):
         return self.get_dir_name(index)+"/"+prefix+"_config.py"

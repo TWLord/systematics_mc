@@ -18,6 +18,7 @@ def main():
     ten_mrad = math.degrees(0.01)
     for run in [10052]:
         my_config = config.build_config(run, "tku", "base")
+        do_one(my_config)
         for tracker in ["tku"]:
               position = {"x":1., "y":0., "z":0.}
               my_config = config.build_config(run, tracker, "pos_plus", position = position)

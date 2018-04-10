@@ -22,6 +22,7 @@ class Config(object):
             "scale":{"E2":1., "E1":1., "C":1.},
             "density":2.0, #g/cm^3
         }
+        self.beam_z_position = 13968.0 # 18836.8+8.
         self.reconstruction_geometry = copy.deepcopy(self.simulation_geometry)
         self.beam_input_file = "beams/"+str(self.run_number)+"/tku_5.json"
         self.beam_format = "icool_for003"
