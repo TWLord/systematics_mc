@@ -7,7 +7,7 @@ import copy
 def do_one(config):
     my_env = environment.Environment(config)
     my_env.setup_environment()
-    my_run = run.Run(my_env, 2)
+    my_run = run.Run(my_env)
     my_run.prefix = "simulation"
     my_run.run_many()
     my_run.prefix = "reconstruction"
