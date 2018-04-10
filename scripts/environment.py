@@ -51,9 +51,17 @@ class Environment(object):
 
     def make_simulation_geometry(self):
         self.copy_geometry("simulation")
-
+        murgler = murgle_geometry.GeometryMurgler(self.simulation_geometry,
+                                                  self.get_output_geometry_filename("simulation"),
+                                                  "geometry_"+str(self.run_number))
+        murgler.murgle()
+                                                  
     def make_reconstruction_geometry(self):
         self.copy_geometry("reconstruction")
+        murgler = murgle_geometry.GeometryMurgler(self.simulation_geometry,
+                                                  self.get_output_geometry_filename("reconstruction"),
+                                                  "geometry_"+str(self.run_number))
+        murgler.murgle()
 
     def get_beam_filename(self, index):
         return self.get_dir_name(index)+"/for003.dat"
