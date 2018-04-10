@@ -1,10 +1,20 @@
+import subprocess
 import json
 import copy
+
+def is_scarf():
+    uname = subprocess.check_output(['uname', '-a'])
+    return 'scarf.rl.ac.uk' in uname
+
 
 class Config(object):
     def __init__(self):
         self.run_number = 10052
         self.n_jobs = 3
+        self.n_procs = 3
+        if is_scarf():
+            self.n_jobs = 10
+            self.n_procs = 10
         self.simulation_geometry = {
             "tracker":"tku",
             "position":{"x":0., "y":0., "z":0.},

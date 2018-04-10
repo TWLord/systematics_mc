@@ -5,11 +5,11 @@ import time
 import os
 
 class Run(object):
-    def __init__(self, environment, n_procs, extra_args = []):
+    def __init__(self, environment, extra_args = []):
         self.delta_t = 60
         self.prefix = 'simulation'
         self.environment = environment
-        self.n_procs = n_procs
+        self.n_procs = environment.config.n_procs
         self.extra_args = extra_args
 
     def run_many(self):
