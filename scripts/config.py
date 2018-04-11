@@ -6,15 +6,12 @@ def is_scarf():
     uname = subprocess.check_output(['uname', '-a'])
     return 'scarf.rl.ac.uk' in uname
 
-
 class Config(object):
     def __init__(self):
         self.run_number = 10052
         self.n_jobs = 3
-        self.n_procs = 3
         if is_scarf():
-            self.n_jobs = 10
-            self.n_procs = 10
+            self.n_jobs = 100
         self.simulation_geometry = {
             "tracker":"tku",
             "position":{"x":0., "y":0., "z":0.},
@@ -22,13 +19,19 @@ class Config(object):
             "scale":{"E2":1., "E1":1., "C":1.},
             "density":2.0, #g/cm^3
         }
-        self.beam_z_position = 13968.0 # 18836.8+8.
+        self.beam_z_position = 13965.0 # 18836.8+8.
         self.reconstruction_geometry = copy.deepcopy(self.simulation_geometry)
         self.beam_input_file = "beams/"+str(self.run_number)+"/tku_5.json"
         self.beam_format = "icool_for003"
-        self.n_events = 999
+        self.n_events = 1001
         self.config_in = "config_"+str(self.run_number)+".in"
         self.job_name = "normal"
+        self.run = {
+            "extra_args":["--maximum_number_of_steps", "200000"], # command line arguments for MAUS
+            "delta_t":60, # seconds between each poll
+            "max_t":3600, # seconds before job is hard killed
+            "n_procs":self.n_jobs, # number of concurrent processes
+        }
 
 def build_config(run_number, tracker, job_name, position = None, rotation = None, density = None, currents = None):
     config = Config()

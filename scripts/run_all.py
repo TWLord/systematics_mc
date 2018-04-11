@@ -16,10 +16,10 @@ def do_one(config):
 
 def main():
     ten_mrad = math.degrees(0.01)
-    for run in [10052]:
+    for run in [10051, 10052, 10069]:
         my_config = config.build_config(run, "tku", "base")
         do_one(my_config)
-        for tracker in ["tku"]:
+        for tracker in ["tku", "tkd"]:
               position = {"x":1., "y":0., "z":0.}
               my_config = config.build_config(run, tracker, "pos_plus", position = position)
               do_one(my_config)
