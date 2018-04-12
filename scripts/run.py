@@ -23,6 +23,8 @@ class Run(object):
             print "locally"
         timer = 0
         job_list = range(self.environment.n_jobs)
+        for unique_id in range(self.environment.n_jobs):
+            self.clear_links(unique_id)
 
         self.processes = []
         while len(self.processes) > 0 or len(job_list) > 0:
@@ -43,8 +45,6 @@ class Run(object):
         except OSError:
             pass # not on scarf
         print "   ... Clearing links"
-        for unique_id in range(self.environment.n_jobs):
-            self.clear_links(unique_id)
         print "Done"
 
     def run_one(self, unique_id):
@@ -81,16 +81,30 @@ class Run(object):
         here = os.getcwd()+"/"
         run_number = str(self.environment.run_number)
         out_dir = self.environment.get_dir_name(unique_id)
-        os.symlink(here+self.environment.get_output_geometry_filename(self.prefix),
-                   out_dir+'/geometry_'+run_number)
-        os.symlink(here+"scripts/"+self.prefix+".py",
-                   out_dir+"/"+self.prefix+".py")
+        link_list = [
+            (here+self.environment.get_output_geometry_filename(self.prefix),
+                                              out_dir+'/geometry_'+run_number),
+            (here+"scripts/"+self.prefix+".py", out_dir+"/"+self.prefix+".py"),
+        ]
+        for source, target in link_list:
+            os.symlink(source, target)
+            while not os.path.exists(target):
+                time.sleep(0.1)
 
     def clear_links(self, unique_id):
         here = os.getcwd()
-        os.chdir(self.environment.get_dir_name(unique_id))
-        os.unlink('geometry_'+str(self.environment.run_number))
-        os.unlink(self.prefix+".py")
+        try:
+            os.chdir(self.environment.get_dir_name(unique_id))
+        except OSError:
+            pass # maybe the dir didn't exist
+        try:
+            os.unlink('geometry_'+str(self.environment.run_number))
+        except OSError:
+            pass # maybe the links didn't exist
+        try:
+            os.unlink(self.prefix+".py")
+        except OSError:
+            pass # maybe the links didn't exist
         os.chdir(here)
 
     def get_bjob_number(self, dir_name):

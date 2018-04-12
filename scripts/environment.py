@@ -19,11 +19,7 @@ class Environment(object):
         self.beam_input_file = config.beam_input_file
         self.beam_format = config.beam_format
         self.n_events = config.n_events
-        self.config_in = config.config_in
         self.job_name = config.job_name
-
-        self.iteration_number = 1
-
 
     def setup_environment(self):
         self.make_dirs()
@@ -76,6 +72,7 @@ class Environment(object):
         return self.get_dir_name(index)+"/"+prefix+"_config.py"
 
     def make_config(self, prefix):
+        print "Making config from", self.config.config_in
         for index in range(self.n_jobs):
             subs = {
                 "__geometry_filename__":self.get_geometry_filename(),
@@ -86,23 +83,24 @@ class Environment(object):
                 "__n_spills__":self.n_events/100+1,
                 "__output_filename__":"maus_"+prefix+".root",
             }
-            xboa.common.substitute(self.config_in, self.get_config(index, prefix), subs)
+            xboa.common.substitute(self.config.config_in, self.get_config(index, prefix), subs)
+  
+    def get_dir_preroot(self):
+        return str(self.run_number)+"_systematics_v"+str(self.config.iteration_number)
 
     def get_dir_root(self):
-        return str(self.run_number)+"_systematics_v"+str(self.iteration_number)+"/"+self.job_name+"/"
+        return self.get_dir_preroot()+"/"+self.job_name+"/"
 
     def get_dir_name(self, job_id):
         return self.get_dir_root()+"/"+str(job_id)
 
     def make_dirs(self):
-        while os.path.exists(self.get_dir_root()):
-            self.iteration_number += 1
         print "Setting up dirs with name", self.get_dir_root()
         for i in range(self.n_jobs):
             os.makedirs(self.get_dir_name(i))
             print i,
             sys.stdout.flush()
-        pause = 1
+        pause = min(self.n_jobs, 10)
         print "\nPause for", pause, "seconds to give OS a chance to finish"
         for i in range(pause):
             time.sleep(1)

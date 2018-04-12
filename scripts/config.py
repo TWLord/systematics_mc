@@ -24,7 +24,7 @@ class Config(object):
         self.beam_input_file = "beams/"+str(self.run_number)+"/tku_5.json"
         self.beam_format = "icool_for003"
         self.n_events = 1001
-        self.config_in = "config_"+str(self.run_number)+".in"
+        self.config_in = "config.in"
         self.job_name = "normal"
         self.run = {
             "extra_args":["--maximum_number_of_steps", "200000"], # command line arguments for MAUS
@@ -33,10 +33,12 @@ class Config(object):
             "n_procs":self.n_jobs, # number of concurrent processes
         }
 
-def build_config(run_number, tracker, job_name, position = None, rotation = None, density = None, currents = None):
+def build_config(run_number, tracker, job_name, iteration, position = None, rotation = None, density = None, currents = None):
     config = Config()
+    config.iteration_number = iteration
+    print "Setting config iteration number", config.iteration_number
     config.run_number = run_number
-    config.job_name = job_name
+    config.job_name = tracker+"_"+job_name
     if position == None:
         position = {"x":0., "y":0., "z":0.}
     if rotation == None:
