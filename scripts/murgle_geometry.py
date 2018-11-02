@@ -16,14 +16,7 @@ class GeometryMurgler(object):
         self.move_tracker(self.geometry["position"], self.geometry["rotation"])
         self.tracker_material_density(self.geometry["density"])
         self.scale_field(self.geometry["scale"])
-        dummy = {
-            "tracker":"tku",
-            "rotation":{"x":0., "y":0., "z":0.},
-            "position":{"x":0., "y":0., "z":0.},
-            "scale":{"E2":1., "E1":1., "C":1.},
-            "density":1.50, #g/cm^3
-        }
-        
+       
     def rescale(self, line, new_scale):
         words = line.split(" ")
         value = float(words[-1])*new_scale
@@ -129,6 +122,7 @@ class GeometryMurgler(object):
         os.rename(src_filename+".tmp", src_filename)
 
     def tracker_material_density(self, density):
+        # HACKING this stuff in ~/data/geometry
         src_filename_glob = self.dir+"/Tracker"+str(self.tracker)+"View?Station?_Doublet.gdml"
         for src_filename in glob.glob(src_filename_glob):
             tree = xml.etree.ElementTree.parse(src_filename)

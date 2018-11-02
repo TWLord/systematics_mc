@@ -3,9 +3,9 @@ class Environment:
     seed = __seed__
     geometry_filename = "__geometry_filename__"
     beam_filename = "__beam_filename__"
-    beam_format = "__beam_format__"
     n_spills = __n_spills__
     output_filename = "__output_filename__"
+    z_position = __z_position__
 
 keep_tracks = True
 
@@ -21,14 +21,18 @@ SciFiConfigDir = "/home/astg/scarf148/MAUS/work/2014-11-26_measurement-of-magnet
 SciFiMappingFileName = str(Environment.run)+"/scifi_mapping.txt"
 SciFiCalibrationFileName = str(Environment.run)+"/scifi_calibration.txt"
 SciFiBadChannelsFileName = str(Environment.run)+"/scifi_bad_channels.txt"
-
+SciFiParams_Density = 2.0
 beam = {
-    "particle_generator":"file", # routine for generating empty primaries
-    "random_seed":Environment.seed, # random seed for beam generation; controls also how the MC
-    "beam_file_format":Environment.beam_format,
-    "beam_file":Environment.beam_filename,
-    "file_particles_per_spill":100,
-    "definitions":[]
 }
+smear_and_sample = {
+    "n_events_per_spill":100,
+    "input_file":Environment.beam_filename,
+    "n_momentum_slices":10,
+    "momentum_min":135.,
+    "momentum_max":145.,
+    "z_position":Environment.z_position,
+    "seed":Environment.seed
+}
+
 
 SciFiNPECut = 4.0

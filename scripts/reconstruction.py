@@ -31,6 +31,7 @@ def run():
     my_map.append(MAUS.MapCppTrackerPatternRecognition()) # SciFi track finding
     my_map.append(MAUS.MapCppTrackerPRSeed()) # Set the Seed from PR
     my_map.append(MAUS.MapCppTrackerTrackFit()) # SciFi track fit
+    my_map.append(MAUS.MapCppTrackerTOFReFit()) # SciFi track refit
 
     # Then construct a MAUS output component - filename comes from datacards
     my_output = MAUS.OutputCppRoot()

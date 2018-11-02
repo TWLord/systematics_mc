@@ -1,5 +1,6 @@
 #!/usr/env python
 
+import sys
 import subprocess
 import time
 import os
@@ -32,11 +33,12 @@ class Run(object):
             self.poll()
             print len(self.processes)
             while len(self.processes) < self.n_procs and len(job_list) > 0:
+                print len(self.processes), len(job_list)
                 job = job_list.pop(0)
                 self.processes.append(self.run_one(job))
             timer += self.delta_t
             if timer > self.max_t:
-                print 'Out of time ... killing all jobs'
+                print 'Run.run_many: Out of time ... killing all jobs'
                 self.kill_all()
                 job_list = []
             time.sleep(self.delta_t)
@@ -82,7 +84,7 @@ class Run(object):
         run_number = str(self.environment.run_number)
         out_dir = self.environment.get_dir_name(unique_id)
         link_list = [
-            (here+self.environment.get_output_geometry_filename(self.prefix),
+            (self.environment.get_output_geometry_filename(self.prefix),
                                               out_dir+'/geometry_'+run_number),
             (here+"scripts/"+self.prefix+".py", out_dir+"/"+self.prefix+".py"),
         ]
@@ -143,18 +145,22 @@ class Run(object):
         processes_update = []
         for proc, dir_name in self.processes:
             bjob_number = self.get_bjob_number(dir_name)
-            output = subprocess.check_output(['bjobs', '-prw', str(bjob_number)])
-            for line in output.split('\n'):
-                is_alive = False
-                for alive_key in ['PEND', 'RUN']:
-                    is_alive = is_alive or alive_key in line
-                if self.prefix+".py" in line and str(bjob_number) in line and is_alive:
-                    processes_update.append((proc, dir_name))
-                    break
-            short_text = subprocess.check_output(['bjobs', str(bjob_number)])
-            if verbose:
-                print '   ', proc.pid, dir_name, bjob_number, short_text 
-
+            try:
+                output = subprocess.check_output(['bjobs', '-prw', str(bjob_number)])
+                for line in output.split('\n'):
+                    is_alive = False
+                    for alive_key in ['PEND', 'RUN']:
+                        is_alive = is_alive or alive_key in line
+                    if self.prefix+".py" in line and str(bjob_number) in line and is_alive:
+                        processes_update.append((proc, dir_name))
+                        break
+                short_text = subprocess.check_output(['bjobs', str(bjob_number)])
+                if verbose:
+                    print '   ', proc.pid, dir_name, bjob_number, short_text 
+            except Exception:
+                sys.excepthook(*sys.exc_info())
+                print "Failed to check bjob", bjob_number, "in dir", dir_name
+                print "    ... assume it is dead"
         return processes_update
 
     def kill_all(self):
@@ -176,3 +182,12 @@ class Run(object):
                 output = subprocess.check_output(['bkill', str(bjob_number)])
             except Exception:
                 pass
+
+    def clear(self, file_name):
+        for unique_id in range(self.environment.n_jobs):
+            dir_name = self.environment.get_dir_name(unique_id)
+            name = os.path.join(dir_name, file_name)
+            try:
+                os.unlink(name)
+            except OSError:
+                pass # maybe the links didn't exist

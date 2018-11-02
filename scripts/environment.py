@@ -17,15 +17,16 @@ class Environment(object):
         self.simulation_geometry = config.simulation_geometry
         self.reconstruction_geometry = config.reconstruction_geometry
         self.beam_input_file = config.beam_input_file
-        self.beam_format = config.beam_format
+        self.beam_z_position = config.beam_z_position
         self.n_events = config.n_events
+        self.n_events_per_spill = config.n_events_per_spill
         self.job_name = config.job_name
 
     def setup_environment(self):
         self.make_dirs()
         self.make_simulation_geometry()
         self.make_reconstruction_geometry()
-        self.make_beams()
+        #self.make_beams() ... moved to simulation mapper
         self.make_config("simulation")
         self.make_config("reconstruction")
         # note that because of the way geometry works, we have to make links
@@ -54,13 +55,13 @@ class Environment(object):
                                                   
     def make_reconstruction_geometry(self):
         self.copy_geometry("reconstruction")
-        murgler = murgle_geometry.GeometryMurgler(self.simulation_geometry,
+        murgler = murgle_geometry.GeometryMurgler(self.reconstruction_geometry,
                                                   self.get_output_geometry_filename("reconstruction"),
                                                   "geometry_"+str(self.run_number))
         murgler.murgle()
 
     def get_beam_filename(self, index):
-        return self.get_dir_name(index)+"/for003.dat"
+        return os.getcwd()+"/"+self.beam_input_file
 
     def make_beams(self):
         smear = smear_and_sample.SmearAndSample(self.beam_input_file, "", self.beam_format, self.n_events)
@@ -78,21 +79,22 @@ class Environment(object):
                 "__geometry_filename__":self.get_geometry_filename(),
                 "__run__":str(self.run_number),
                 "__seed__":str(index),
-                "__beam_filename__":os.path.split(self.get_beam_filename(index))[1],
-                "__beam_format__":self.beam_format,
-                "__n_spills__":self.n_events/100+1,
+                "__beam_filename__":self.get_beam_filename(index),
+                "__n_spills__":self.n_events/self.n_events_per_spill+1,
                 "__output_filename__":"maus_"+prefix+".root",
+                "__z_position__":self.beam_z_position,
             }
             xboa.common.substitute(self.config.config_in, self.get_config(index, prefix), subs)
   
     def get_dir_preroot(self):
-        return str(self.run_number)+"_systematics_v"+str(self.config.iteration_number)
+        return "/work/ast/cr67/"+str(self.run_number)+"_systematics_v"+str(self.config.iteration_number)
 
     def get_dir_root(self):
         return self.get_dir_preroot()+"/"+self.job_name+"/"
 
     def get_dir_name(self, job_id):
-        return self.get_dir_root()+"/"+str(job_id)
+        job_name = str(job_id).rjust(4, '0')
+        return self.get_dir_root()+"/"+job_name
 
     def make_dirs(self):
         print "Setting up dirs with name", self.get_dir_root()

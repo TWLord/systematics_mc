@@ -11,10 +11,7 @@ import io   #  generic python library for I/O
 
 import MAUS # MAUS libraries
 
-import smear_and_sample
-
-def generate_beam():
-    smear_and_sample.SmearAndSample("data_"+self.run_number+"/"+file_name, "for003.dat", "icool_for003", 100)
+from MapPySmearAndSample import MapPySmearAndSample
 
 def run():
     """ Run the macro
@@ -28,7 +25,7 @@ def run():
     my_map = MAUS.MapPyGroup()
 
     # GEANT4
-    my_map.append(MAUS.MapPyBeamMaker()) # beam construction
+    my_map.append(MapPySmearAndSample()) # beam construction
     my_map.append(MAUS.MapCppSimulation())  #  geant4 simulation
 
     # Then construct a MAUS output component - filename comes from datacards

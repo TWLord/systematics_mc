@@ -23,7 +23,13 @@ class SmearAndSample(object):
         line = self.fsrc.readline()
         self.metadata = json.loads(line)
         src_dist = numpy.array([json.loads(line) for line in self.fsrc]).transpose()
-        self.kernel = scipy.stats.gaussian_kde(src_dist)
+        src_psv_dist = [variables[0:5] for variables in src_dist] # x,px,y,py,pz
+        self.psv_kernel = scipy.stats.gaussian_kde(src_psv_dist)
+        tof0_dist = [variables[4:6] for variables in src_dist] # pz,tof0
+        self.tof0_kernel = scipy.stats.gaussian_kde(tof0_dist)
+        tof1_dist = [[variables[4], variables[6]] for variables in src_dist] # pz,tof0
+        self.tof1_kernel = scipy.stats.gaussian_kde(tof1_dist)
+
 
     def write(self, z_position = 0., seed = None, output_file = None):
         if seed != None:
