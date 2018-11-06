@@ -6,6 +6,8 @@ class Environment:
     n_spills = __n_spills__
     output_filename = "__output_filename__"
     z_position = __z_position__
+    tof0_offset = __tof0_offset__
+    tof1_offset = __tof1_offset__
 
 keep_tracks = True
 
@@ -31,7 +33,9 @@ smear_and_sample = {
     "momentum_min":135.,
     "momentum_max":145.,
     "z_position":Environment.z_position,
-    "seed":Environment.seed
+    "seed":Environment.seed,
+    "tof0_offset":Environment.tof0_offset,
+    "tof1_offset":Environment.tof1_offset,
 }
 
 

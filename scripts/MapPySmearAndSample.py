@@ -36,6 +36,8 @@ class MapPySmearAndSample(object):
         self.momentum_max = 0.
         self.momentum_bin_lower = []
         self.z_position = 0.
+        self.tof0_offset = 0.
+        self.tof1_offset = 0.
         self.metadata = None
         self.random_seed = 0
  
@@ -50,6 +52,8 @@ class MapPySmearAndSample(object):
         self.n_events_per_spill = config_json["n_events_per_spill"]
         self.fin = open(config_json["input_file"])
         self.n_momentum_slices = config_json["n_momentum_slices"]
+        self.tof0_offset = config_json["tof0_offset"]
+        self.tof1_offset = config_json["tof1_offset"]
         self.momentum_min = config_json["momentum_min"]
         self.momentum_max = config_json["momentum_max"]
         self.random_seed = config_json["seed"]
@@ -83,6 +87,8 @@ class MapPySmearAndSample(object):
             reco_event = self.generate_reco_event(i, psv)
             spill.GetReconEvents().push_back(reco_event)
             spill.GetMCEvents().push_back(mc_event)
+        #data = maus_cpp.converter.json_repr(data)
+        #print >> self.fout, json.dumps(data, indent=1)
         return data
 
     def generate_psv_list(self):
@@ -113,8 +119,8 @@ class MapPySmearAndSample(object):
 
     def generate_reco_event(self, ev_number, psv):
         pz = psv[4]
-        tof0_sp = self.sample_distribution(pz, self.tof0_dist)
-        tof1_sp = self.sample_distribution(pz, self.tof1_dist)
+        tof0_sp = self.sample_distribution(pz, self.tof0_dist, self.tof0_offset)
+        tof1_sp = self.sample_distribution(pz, self.tof1_dist, self.tof1_offset)
         tof0_sp_array = ROOT.MAUS.TOF0SpacePointArray()
         tof0_sp_array.push_back(tof0_sp)
         tof1_sp_array = ROOT.MAUS.TOF1SpacePointArray()
@@ -169,10 +175,10 @@ class MapPySmearAndSample(object):
             tof_dist.append((mean, std))
         return tof_dist
 
-    def sample_distribution(self, pz, tof_dist):
+    def sample_distribution(self, pz, tof_dist, tof_offset):
         pz_bin = bisect.bisect_right(self.momentum_bin_lower, pz)-1
         mean, std = tof_dist[pz_bin]
-        tof = numpy.random.normal(mean, std)
+        tof = numpy.random.normal(mean+tof_offset, std)
         tof_sp = ROOT.MAUS.TOFSpacePoint()
         tof_sp.SetTime(tof)
         return tof_sp

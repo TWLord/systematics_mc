@@ -11,24 +11,30 @@ class Config(object):
         self.run_number = 10052
         self.n_jobs = 3
         if is_scarf():
-            self.n_jobs = 1000 # 1000
+            self.n_jobs = 1000
+        self.n_events = 1001 # 101
+        self.n_events_per_spill = 100 # 100
         self.simulation_geometry = {
+            "source_dir":None,
+            "reference_dir":None,
+            "target_dir":None,
             "tracker":"tku",
             "position":{"x":0., "y":0., "z":0.},
             "rotation":{"x":0., "y":0., "z":0.},
             "scale":{"E2":1., "E1":1., "C":1.},
             "density":2.0, #g/cm^3
+            "silicon_fraction":0.0,
         }
+        self.tof0_offset = -25.4 # note analysis script tof0_offset adds time; here we want to undo that offset so sign is negative
+        self.tof1_offset = 0.
         self.beam_z_position = 13965.0 # 18836.8+8.
         self.reconstruction_geometry = copy.deepcopy(self.simulation_geometry)
         self.beam_input_file = "beams/"+str(self.run_number)+"/tku_5.json"
-        self.n_events = 1001 # 101
-        self.n_events_per_spill = 100 # 101
         self.config_in = "config.in"
         self.job_name = "normal"
         self.run = {
             "extra_args":["--maximum_number_of_steps", "200000"], # command line arguments for MAUS
-            "delta_t":6, # seconds between each poll
+            "delta_t":30, # seconds between each poll
             "max_t":60*60*5, # seconds before job is hard killed
             "n_procs":min(self.n_jobs, 150), # number of concurrent processes
         }

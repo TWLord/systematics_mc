@@ -49,6 +49,15 @@ class Run(object):
         print "   ... Clearing links"
         print "Done"
 
+    def make_sbatch_file(self, unique_id, command):
+        file_name = self.prefix+"_"+unique_id+".sbatch"
+        fout = open(file_name, "w")
+        print >> fout, "#!/bin/sh\n#SBATCH"
+        for item in command:
+            print >> fout, item,
+        print >> fout
+        return file_name
+
     def run_one(self, unique_id):
         here = os.getcwd()
         self.make_links(unique_id)
@@ -58,16 +67,16 @@ class Run(object):
               ]+self.extra_args
         os.chdir(self.environment.get_dir_name(unique_id))
         if self.is_scarf():
-            bsub = ['bsub',
+            sbatch_filename = self.make_sbatch_file(str(unique_id), run)
+            run = ['sbatch',
                     '-n', '1',
-                    '-W', '24:00',
-                    '-q', 'scarf-ibis',
+                    '--time', '2880', # minutes, 48 hrs
+                    '-p', 'ibis',
                     '-o', log_name,
                     '-e', log_name,
-                    #'-K',
-                ]
-            run = bsub+run
-            log_file = open(self.prefix+"_bsub.log", 'w')
+                    sbatch_filename
+            ]
+            log_file = open(self.prefix+"_sbatch.log", 'w')
         else:
             log_file = open(log_name, 'w')
         subproc = subprocess.Popen(run, stdout=log_file, stderr=subprocess.STDOUT)
@@ -110,12 +119,12 @@ class Run(object):
         os.chdir(here)
 
     def get_bjob_number(self, dir_name):
-        line = open(dir_name+"/"+self.prefix+"_bsub.log").readline()
+        line = open(dir_name+"/"+self.prefix+"_sbatch.log").readline()
         if line == "":
             return None
-        bjob_number = line.split(' ')[1]
-        bjob_number = bjob_number.rstrip('>')
-        bjob_number = bjob_number.lstrip('<')
+        line = line.rstrip('\n')
+        line = line.rstrip(' ')
+        bjob_number = line.split(' ')[-1]
         return int(bjob_number)
 
     def poll(self, verbose = False):
@@ -146,17 +155,13 @@ class Run(object):
         for proc, dir_name in self.processes:
             bjob_number = self.get_bjob_number(dir_name)
             try:
-                output = subprocess.check_output(['bjobs', '-prw', str(bjob_number)])
+                output = subprocess.check_output(['squeue', '-u', 'scarf148'])
                 for line in output.split('\n'):
-                    is_alive = False
-                    for alive_key in ['PEND', 'RUN']:
-                        is_alive = is_alive or alive_key in line
-                    if self.prefix+".py" in line and str(bjob_number) in line and is_alive:
+                    if str(bjob_number) in line:
                         processes_update.append((proc, dir_name))
                         break
-                short_text = subprocess.check_output(['bjobs', str(bjob_number)])
                 if verbose:
-                    print '   ', proc.pid, dir_name, bjob_number, short_text 
+                    print '   ', proc.pid, dir_name, bjob_number, ':', line 
             except Exception:
                 sys.excepthook(*sys.exc_info())
                 print "Failed to check bjob", bjob_number, "in dir", dir_name
@@ -179,7 +184,7 @@ class Run(object):
         for proc, dir_name in self.processes:
             bjob_number = self.get_bjob_number(dir_name)
             try:
-                output = subprocess.check_output(['bkill', str(bjob_number)])
+                output = subprocess.check_output(['scancel', str(bjob_number)])
             except Exception:
                 pass
 

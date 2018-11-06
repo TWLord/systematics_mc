@@ -24,8 +24,8 @@ class Environment(object):
 
     def setup_environment(self):
         self.make_dirs()
-        self.make_simulation_geometry()
-        self.make_reconstruction_geometry()
+        self.make_geometry("simulation")
+        self.make_geometry("reconstruction")
         #self.make_beams() ... moved to simulation mapper
         self.make_config("simulation")
         self.make_config("reconstruction")
@@ -33,8 +33,12 @@ class Environment(object):
         # at run time for each geometry (geometry_xxxxx/<filename> is hardcoded
         # into the geometry)
 
+    def get_geometry_ref_dir(self):
+        dir_name =  "geometry_"+str(self.run_number)
+        return dir_name
+
     def get_geometry_filename(self):
-        filename = "geometry_"+str(self.run_number)+"/ParentGeometryFile.dat"
+        filename = self.get_geometry_ref_dir()+"/ParentGeometryFile.dat"
         return filename
 
     def get_output_geometry_filename(self, prefix):
@@ -42,22 +46,18 @@ class Environment(object):
         return self.get_dir_root()+'/'+prefix+'_'+geometry
 
     def copy_geometry(self, prefix):
+        geometry_src_root = "/work/ast/cr67/geometry/"
         geometry = os.path.split(self.get_geometry_filename())[0]
         target = self.get_output_geometry_filename(prefix)
-        shutil.copytree(geometry, target)
+        shutil.copytree(geometry_src_root+geometry, target)
 
-    def make_simulation_geometry(self):
-        self.copy_geometry("simulation")
-        murgler = murgle_geometry.GeometryMurgler(self.simulation_geometry,
-                                                  self.get_output_geometry_filename("simulation"),
-                                                  "geometry_"+str(self.run_number))
-        murgler.murgle()
-                                                  
-    def make_reconstruction_geometry(self):
-        self.copy_geometry("reconstruction")
-        murgler = murgle_geometry.GeometryMurgler(self.reconstruction_geometry,
-                                                  self.get_output_geometry_filename("reconstruction"),
-                                                  "geometry_"+str(self.run_number))
+    def make_geometry(self, tag):
+        self.copy_geometry(tag)
+        geometry_dict = self.simulation_geometry
+        geometry_dict["source_dir"] = self.get_output_geometry_filename(tag)
+        geometry_dict["target_dir"] = self.get_output_geometry_filename(tag)
+        geometry_dict["reference_dir"] = self.get_geometry_ref_dir()
+        murgler = murgle_geometry.GeometryMurgler(geometry_dict)
         murgler.murgle()
 
     def get_beam_filename(self, index):
@@ -83,6 +83,8 @@ class Environment(object):
                 "__n_spills__":self.n_events/self.n_events_per_spill+1,
                 "__output_filename__":"maus_"+prefix+".root",
                 "__z_position__":self.beam_z_position,
+                "__tof1_offset__":self.config.tof1_offset,
+                "__tof0_offset__":self.config.tof0_offset,
             }
             xboa.common.substitute(self.config.config_in, self.get_config(index, prefix), subs)
   

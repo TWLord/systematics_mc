@@ -13,12 +13,12 @@ def do_one(config):
     my_run.run_many()
     my_run.prefix = "reconstruction"
     my_run.run_many()
-    my_run.clear('maus_simulation.root') # delete the pure mc (to save space)
+    #my_run.clear('maus_simulation.root') # delete the pure mc (to save space)
 
 def get_iteration():
     key = '_systematics_v'
     valid_folders = glob.glob('*'+key+'*')
-    iteration_number = 100
+    iteration_number = 101
     for folder in valid_folders:
         index = folder.find(key)+len(key)
         iteration_number = max(iteration_number, int(folder[index:]))
@@ -28,9 +28,10 @@ def main():
     one_mrad = math.degrees(0.001)
     iteration = get_iteration()
     print "Running systematics mc iteration", iteration
-    for run in [10069, 10064, 10051, 10052,]: #
+    for run in [10069]: #, 10064, 10051, 10052,]: #
         my_config = config.build_config(run, "tku", "base", iteration)
         do_one(my_config)
+        continue
         for tracker in ["tku", "tkd"]:
             rotation = {"x":one_mrad*3, "y":0., "z":0.}
             my_config = config.build_config(run, tracker, "rot_plus", iteration, rotation = rotation)

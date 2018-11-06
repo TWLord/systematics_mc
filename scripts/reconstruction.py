@@ -23,7 +23,7 @@ def run():
     my_map = MAUS.MapPyGroup()
 
     # Pre detector set up
-    my_map.append(MAUS.MapCppMCReconSetup())  #  geant4 simulation
+    #my_map.append(MAUS.MapCppMCReconSetup())  #  geant4 simulation
     # SciFi
     my_map.append(MAUS.MapCppTrackerMCDigitization()) # SciFi electronics model
     my_map.append(MAUS.MapCppTrackerClusterRecon()) # SciFi channel clustering
@@ -31,7 +31,8 @@ def run():
     my_map.append(MAUS.MapCppTrackerPatternRecognition()) # SciFi track finding
     my_map.append(MAUS.MapCppTrackerPRSeed()) # Set the Seed from PR
     my_map.append(MAUS.MapCppTrackerTrackFit()) # SciFi track fit
-    my_map.append(MAUS.MapCppTrackerTOFReFit()) # SciFi track refit
+    my_map.append(MAUS.MapCppTrackerTOFCombinedFit())
+    #my_map.append(MAUS.MapCppTrackerDownstreamReFit())
 
     # Then construct a MAUS output component - filename comes from datacards
     my_output = MAUS.OutputCppRoot()
