@@ -19,7 +19,7 @@ input_root_file_name = "maus_simulation.root"
 # run control
 verbose_level = 1
 # scifi
-SciFiConfigDir = "/home/astg/scarf148/MAUS/work/2014-11-26_measurement-of-magnet-alignment/full-mc/calib/"
+SciFiConfigDir = "/data/mice/phumhf/Calibration/"
 SciFiMappingFileName = str(Environment.run)+"/scifi_mapping.txt"
 SciFiCalibrationFileName = str(Environment.run)+"/scifi_calibration.txt"
 SciFiBadChannelsFileName = str(Environment.run)+"/scifi_bad_channels.txt"
@@ -30,8 +30,8 @@ smear_and_sample = {
     "n_events_per_spill":100,
     "input_file":Environment.beam_filename,
     "n_momentum_slices":10,
-    "momentum_min":135.,
-    "momentum_max":145.,
+    "momentum_min":235.,
+    "momentum_max":245.,
     "z_position":Environment.z_position,
     "seed":Environment.seed,
     "tof0_offset":Environment.tof0_offset,

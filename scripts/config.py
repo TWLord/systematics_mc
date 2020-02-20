@@ -2,17 +2,18 @@ import subprocess
 import json
 import copy
 
-def is_scarf():
+def is_epp():
     uname = subprocess.check_output(['uname', '-a'])
-    return 'scarf.rl.ac.uk' in uname
+    return 'epp-ui01' in uname
 
 class Config(object):
     def __init__(self):
         self.run_number = 10052
-        self.n_jobs = 3
-        if is_scarf():
-            self.n_jobs = 1000
-        self.n_events = 1001 # 101
+        self.n_jobs = 20 # 3
+        if is_epp():
+            #self.n_jobs = 1000
+            self.n_jobs = 20
+        self.n_events = 10001 # 1001 # 1001 = 5 mins # 101
         self.n_events_per_spill = 100 # 100
         self.simulation_geometry = {
             "source_dir":None,
@@ -36,7 +37,7 @@ class Config(object):
             "extra_args":["--maximum_number_of_steps", "200000"], # command line arguments for MAUS
             "delta_t":30, # seconds between each poll
             "max_t":60*60*5, # seconds before job is hard killed
-            "n_procs":min(self.n_jobs, 150), # number of concurrent processes
+            "n_procs":min(self.n_jobs, 50), # 150), # number of concurrent processes
         }
 
 def build_config(run_number, tracker, job_name, iteration, position = None, rotation = None, density = None, currents = None):

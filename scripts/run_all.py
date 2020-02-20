@@ -18,7 +18,7 @@ def do_one(config):
 def get_iteration():
     key = '_systematics_v'
     valid_folders = glob.glob('*'+key+'*')
-    iteration_number = 101
+    iteration_number = 106 # 105 # 104 # 103 # 102 # 101
     for folder in valid_folders:
         index = folder.find(key)+len(key)
         iteration_number = max(iteration_number, int(folder[index:]))
@@ -28,10 +28,20 @@ def main():
     one_mrad = math.degrees(0.001)
     iteration = get_iteration()
     print "Running systematics mc iteration", iteration
-    for run in [10069]: #, 10064, 10051, 10052,]: #
+    #for run in [10069]: #, 10064, 10051, 10052,]: #
+    #for run in [9883, 9885, 9886,]: 
+    #for run in [10243, 10245, 10246,]: 
+    #for run in [10314, 10317, 10318, 10319,]: 
+    #for run in [10508, 10504, 10509,]: 
+    #for run in [9911, 10268,]: 
+    #for run in [9910, 10267,]: 
+    for run in [9909, 10265,]: 
+    #for run in [9911, 9910, 9909,]: 
+    #for run in [10268, 10267, 10265,]: 
+    #for run in [9886,]: 
         my_config = config.build_config(run, "tku", "base", iteration)
         do_one(my_config)
-        continue
+        #######continue ## continue if only running tku_base hybrid mc (use this for amplitude/density/frac_emittance corrections from beam) 
         for tracker in ["tku", "tkd"]:
             rotation = {"x":one_mrad*3, "y":0., "z":0.}
             my_config = config.build_config(run, tracker, "rot_plus", iteration, rotation = rotation)

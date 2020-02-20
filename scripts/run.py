@@ -5,6 +5,8 @@ import subprocess
 import time
 import os
 
+SCRIPT_NAME = 'phumhf'
+
 class Run(object):
     def __init__(self, environment):
         self.prefix = 'simulation'
@@ -18,8 +20,8 @@ class Run(object):
     def run_many(self):
         run_number = self.environment.run_number
         print 'Running', self.environment.n_jobs, self.prefix, 'jobs for run', run_number,
-        if self.is_scarf():
-            print "on scarf"
+        if self.is_epp():
+            print "on epp"
         else:
             print "locally"
         timer = 0
@@ -45,17 +47,19 @@ class Run(object):
         try:
             print subprocess.check_output(['bjobs'])
         except OSError:
-            pass # not on scarf
+            pass # not on epp 
         print "   ... Clearing links"
         print "Done"
 
-    def make_sbatch_file(self, unique_id, command):
-        file_name = self.prefix+"_"+unique_id+".sbatch"
+    def make_sbatch_file(self, unique_id, command, workdir):
+        file_name = self.prefix+"_"+unique_id+".sh"
         fout = open(file_name, "w")
-        print >> fout, "#!/bin/sh\n#SBATCH"
+        #print >> fout, "#!/bin/sh\n#SBATCH"
+        print >> fout, "#!/bin/sh\ncd "+str(workdir)+"\n . "+str(self.environment.mausdir)+"/env.sh" # TomL
         for item in command:
             print >> fout, item,
         print >> fout
+        os.chmod(file_name, 509)
         return file_name
 
     def run_one(self, unique_id):
@@ -66,15 +70,24 @@ class Run(object):
               '--configuration_file', self.prefix+'_config.py',
               ]+self.extra_args
         os.chdir(self.environment.get_dir_name(unique_id))
-        if self.is_scarf():
-            sbatch_filename = self.make_sbatch_file(str(unique_id), run)
-            run = ['sbatch',
-                    '-n', '1',
-                    '--time', '2880', # minutes, 48 hrs
-                    '-p', 'ibis',
+        workdir = os.getcwd() 
+        if self.is_epp():
+            sbatch_filename = self.make_sbatch_file(str(unique_id), run, workdir)
+            print sbatch_filename # TomL
+            #if self.n_events > 2000 :
+            #  queue = 'long'
+            #else :
+            #  queue = 'medium'
+            queue = 'medium'
+            run = ['bsub',
+                    #'-n', '1',
+                    #'--time', '2880', # minutes, 48 hrs
+                    #'-q', 'xlong',
+                    '-q', queue,
                     '-o', log_name,
                     '-e', log_name,
-                    sbatch_filename
+                    '-G', 'micegrp',
+                    workdir+"/"+sbatch_filename
             ]
             log_file = open(self.prefix+"_sbatch.log", 'w')
         else:
@@ -84,17 +97,18 @@ class Run(object):
         os.chdir(here)
         return subproc, self.environment.get_dir_name(unique_id)
 
-    def is_scarf(self):
+    def is_epp(self):
         uname = subprocess.check_output(['uname', '-a'])
-        return 'scarf.rl.ac.uk' in uname
+        #uname = "blank"
+        return 'epp-ui01' in uname
 
     def make_links(self, unique_id):
         here = os.getcwd()+"/"
-        run_number = str(self.environment.run_number)
+        run_number = str(self.environment.run_number).zfill(5)
         out_dir = self.environment.get_dir_name(unique_id)
         link_list = [
             (self.environment.get_output_geometry_filename(self.prefix),
-                                              out_dir+'/geometry_'+run_number),
+                                              out_dir+'/runnumber_'+run_number),
             (here+"scripts/"+self.prefix+".py", out_dir+"/"+self.prefix+".py"),
         ]
         for source, target in link_list:
@@ -109,7 +123,8 @@ class Run(object):
         except OSError:
             pass # maybe the dir didn't exist
         try:
-            os.unlink('geometry_'+str(self.environment.run_number))
+            os.unlink('runnumber_'+str(self.environment.run_number).zfill(5))
+            #os.unlink('geometry_'+str(self.environment.run_number))
         except OSError:
             pass # maybe the links didn't exist
         try:
@@ -124,17 +139,20 @@ class Run(object):
             return None
         line = line.rstrip('\n')
         line = line.rstrip(' ')
-        bjob_number = line.split(' ')[-1]
+        # bjob_number = line.split(' ')[-1]
+        bjob_number = line.split('<')[1] # TomL
+        bjob_number = bjob_number.split('>')[0] # TomL
+        print bjob_number
         return int(bjob_number)
 
     def poll(self, verbose = False):
         if verbose:
             print '\nPolling local'
         processes_update = self.poll_local(verbose)
-        if self.is_scarf():
+        if self.is_epp():
             if verbose:
-                print 'Polling scarf'
-            processes_update += self.poll_scarf(verbose)
+                print 'Polling epp'
+            processes_update += self.poll_epp(verbose)
         # remove duplicates
         processes_update = list(set(processes_update))
         self.processes = processes_update
@@ -150,12 +168,23 @@ class Run(object):
                 print '   ', proc.pid, dir_name, proc.returncode
         return processes_update
 
-    def poll_scarf(self, verbose):
+    def poll_epp(self, verbose):
+        """processes_update = []
+        global SCRIPT_NAME
+        output = subprocess.check_output(['bjobs', '-prw'])
+        count = 0
+        for line in output.split('\n'):
+            if SCRIPT_NAME in line:
+                count += 1
+                processes_update.append((count
+        # return count"""
+
         processes_update = []
         for proc, dir_name in self.processes:
             bjob_number = self.get_bjob_number(dir_name)
             try:
-                output = subprocess.check_output(['squeue', '-u', 'scarf148'])
+                #output = subprocess.check_output(['squeue', '-u', 'phumhf'])
+                output = subprocess.check_output(['bjobs', '-prw']) # TomL
                 for line in output.split('\n'):
                     if str(bjob_number) in line:
                         processes_update.append((proc, dir_name))
@@ -165,13 +194,13 @@ class Run(object):
             except Exception:
                 sys.excepthook(*sys.exc_info())
                 print "Failed to check bjob", bjob_number, "in dir", dir_name
-                print "    ... assume it is dead"
+                print "    ... assume it is dead" 
         return processes_update
 
     def kill_all(self):
         self.kill_all_local()
-        if self.is_scarf():
-            self.kill_all_scarf()
+        if self.is_epp():
+            self.kill_all_epp()
     
     def kill_all_local(self):
         for proc, dir_name in self.processes:
@@ -180,7 +209,7 @@ class Run(object):
             pid_str = str(proc.pid)
             subprocess.check_output(['kill', '-9', pid_str])
             
-    def kill_all_scarf(self):
+    def kill_all_epp(self):
         for proc, dir_name in self.processes:
             bjob_number = self.get_bjob_number(dir_name)
             try:

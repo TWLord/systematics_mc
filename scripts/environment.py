@@ -21,6 +21,7 @@ class Environment(object):
         self.n_events = config.n_events
         self.n_events_per_spill = config.n_events_per_spill
         self.job_name = config.job_name
+        self.mausdir = '/home/phumhf/MICE/maus--versions/MAUSv3.3.0'
 
     def setup_environment(self):
         self.make_dirs()
@@ -34,8 +35,15 @@ class Environment(object):
         # into the geometry)
 
     def get_geometry_ref_dir(self):
-        dir_name =  "geometry_"+str(self.run_number)
+        dir_name =  "runnumber_"+str(self.run_number).zfill(5)
         return dir_name
+
+    def get_geometry_full_path(self): # TomL
+        geometry_src_root = "/data/mice/phumhf/Geometries/" # TomL
+        dir_name =  geometry_src_root+self.get_geometry_ref_dir() # TomL
+        #dir_name =  "runnumber_"+str(self.run_number)
+        #dir_name =  "/data/mice/phumhf/Geometries/geometry_"+str(self.run_number)
+        return dir_name # TomL
 
     def get_geometry_filename(self):
         filename = self.get_geometry_ref_dir()+"/ParentGeometryFile.dat"
@@ -46,7 +54,8 @@ class Environment(object):
         return self.get_dir_root()+'/'+prefix+'_'+geometry
 
     def copy_geometry(self, prefix):
-        geometry_src_root = "/work/ast/cr67/geometry/"
+        #geometry_src_root = "/work/ast/cr67/geometry/"
+        geometry_src_root = "/data/mice/phumhf/Geometries/"
         geometry = os.path.split(self.get_geometry_filename())[0]
         target = self.get_output_geometry_filename(prefix)
         shutil.copytree(geometry_src_root+geometry, target)
@@ -56,7 +65,8 @@ class Environment(object):
         geometry_dict = self.simulation_geometry
         geometry_dict["source_dir"] = self.get_output_geometry_filename(tag)
         geometry_dict["target_dir"] = self.get_output_geometry_filename(tag)
-        geometry_dict["reference_dir"] = self.get_geometry_ref_dir()
+        #geometry_dict["reference_dir"] = self.get_geometry_ref_dir()
+        geometry_dict["reference_dir"] = self.get_geometry_full_path() # TomL
         murgler = murgle_geometry.GeometryMurgler(geometry_dict)
         murgler.murgle()
 
@@ -89,7 +99,8 @@ class Environment(object):
             xboa.common.substitute(self.config.config_in, self.get_config(index, prefix), subs)
   
     def get_dir_preroot(self):
-        return "/work/ast/cr67/"+str(self.run_number)+"_systematics_v"+str(self.config.iteration_number)
+        #return "/work/ast/cr67/"+str(self.run_number)+"_systematics_v"+str(self.config.iteration_number)
+        return "/data/mice/phumhf/analMC/"+str(self.run_number)+"_systematics_v"+str(self.config.iteration_number)
 
     def get_dir_root(self):
         return self.get_dir_preroot()+"/"+self.job_name+"/"
