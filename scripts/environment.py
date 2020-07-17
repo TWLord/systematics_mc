@@ -21,6 +21,8 @@ class Environment(object):
         self.n_events = config.n_events
         self.n_events_per_spill = config.n_events_per_spill
         self.job_name = config.job_name
+        self.momentum_min = config.momentum_min # now passed from config.py
+        self.momentum_max = config.momentum_max # now passed from config.py
         self.mausdir = '/home/phumhf/MICE/maus--versions/MAUSv3.3.0'
 
     def setup_environment(self):
@@ -95,6 +97,8 @@ class Environment(object):
                 "__z_position__":self.beam_z_position,
                 "__tof1_offset__":self.config.tof1_offset,
                 "__tof0_offset__":self.config.tof0_offset,
+                "__momentum_min__":self.config.momentum_min,
+                "__momentum_max__":self.config.momentum_max,
             }
             xboa.common.substitute(self.config.config_in, self.get_config(index, prefix), subs)
   

@@ -73,12 +73,13 @@ class Run(object):
         workdir = os.getcwd() 
         if self.is_epp():
             sbatch_filename = self.make_sbatch_file(str(unique_id), run, workdir)
-            print sbatch_filename # TomL
+            #print sbatch_filename # TomL
             #if self.n_events > 2000 :
             #  queue = 'long'
             #else :
             #  queue = 'medium'
-            queue = 'medium'
+            #queue = 'medium'
+            queue = 'long'
             run = ['bsub',
                     #'-n', '1',
                     #'--time', '2880', # minutes, 48 hrs
@@ -142,7 +143,7 @@ class Run(object):
         # bjob_number = line.split(' ')[-1]
         bjob_number = line.split('<')[1] # TomL
         bjob_number = bjob_number.split('>')[0] # TomL
-        print bjob_number
+        #print bjob_number
         return int(bjob_number)
 
     def poll(self, verbose = False):

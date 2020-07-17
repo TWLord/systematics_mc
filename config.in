@@ -8,6 +8,8 @@ class Environment:
     z_position = __z_position__
     tof0_offset = __tof0_offset__
     tof1_offset = __tof1_offset__
+    momentum_min = __momentum_min__
+    momentum_max = __momentum_max__
 
 keep_tracks = True
 
@@ -23,15 +25,17 @@ SciFiConfigDir = "/data/mice/phumhf/Calibration/"
 SciFiMappingFileName = str(Environment.run)+"/scifi_mapping.txt"
 SciFiCalibrationFileName = str(Environment.run)+"/scifi_calibration.txt"
 SciFiBadChannelsFileName = str(Environment.run)+"/scifi_bad_channels.txt"
-SciFiParams_Density = 2.0
+SciFiParams_Density = 1.06
 beam = {
 }
 smear_and_sample = {
     "n_events_per_spill":100,
     "input_file":Environment.beam_filename,
     "n_momentum_slices":10,
-    "momentum_min":235.,
-    "momentum_max":245.,
+    "momentum_min":135.,
+    "momentum_max":145.,
+    #"momentum_min":Environment.momentum_min,
+    #"momentum_max":Environment.momentum_max,
     "z_position":Environment.z_position,
     "seed":Environment.seed,
     "tof0_offset":Environment.tof0_offset,

@@ -11,10 +11,12 @@ class Config(object):
         self.run_number = 10052
         self.n_jobs = 20 # 3
         if is_epp():
-            #self.n_jobs = 1000
-            self.n_jobs = 20
+            self.n_jobs = 100
+            #self.n_jobs = 20
         self.n_events = 10001 # 1001 # 1001 = 5 mins # 101
         self.n_events_per_spill = 100 # 100
+        self.momentum_min = 135.
+        self.momentum_max = 145.
         self.simulation_geometry = {
             "source_dir":None,
             "reference_dir":None,
@@ -36,7 +38,7 @@ class Config(object):
         self.run = {
             "extra_args":["--maximum_number_of_steps", "200000"], # command line arguments for MAUS
             "delta_t":30, # seconds between each poll
-            "max_t":60*60*5, # seconds before job is hard killed
+            "max_t":60*60*10, # *5, # seconds before job is hard killed
             "n_procs":min(self.n_jobs, 50), # 150), # number of concurrent processes
         }
 

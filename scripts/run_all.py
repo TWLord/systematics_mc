@@ -18,7 +18,7 @@ def do_one(config):
 def get_iteration():
     key = '_systematics_v'
     valid_folders = glob.glob('*'+key+'*')
-    iteration_number = 106 # 105 # 104 # 103 # 102 # 101
+    iteration_number = 107 # 106 # 105 # 104 # 103 # 102 # 101
     for folder in valid_folders:
         index = folder.find(key)+len(key)
         iteration_number = max(iteration_number, int(folder[index:]))
@@ -35,11 +35,46 @@ def main():
     #for run in [10508, 10504, 10509,]: 
     #for run in [9911, 10268,]: 
     #for run in [9910, 10267,]: 
-    for run in [9909, 10265,]: 
+    #for run in [9909, 10265,]: 
     #for run in [9911, 9910, 9909,]: 
     #for run in [10268, 10267, 10265,]: 
-    #for run in [9886,]: 
-        my_config = config.build_config(run, "tku", "base", iteration)
+    for run in [9885,]: 
+    #for run in [10317,]: 
+    #for run in [9911, 9910, 9909,]: 
+        #my_config = config.build_config(run, "tku", "base", iteration)
+        #do_one(my_config)
+        #######continue ## continue if only running tku_base hybrid mc (use this for amplitude/density/frac_emittance corrections from beam) 
+        #for tracker in ["tku", "tkd"]:
+        #for tracker in ["tku"]:
+            #rotation = {"x":one_mrad*3, "y":0., "z":0.}
+            #my_config = config.build_config(run, tracker, "rot_plus", iteration, rotation = rotation)
+            #do_one(my_config)
+            #position = {"x":3., "y":0., "z":0.}
+            #my_config = config.build_config(run, tracker, "pos_plus", iteration, position = position)
+            #do_one(my_config)
+            #scale = {"C":1.03, "E2":1.05, "E1":1.05}
+            #scale = {"C":1.03, }
+            #base_scale = {"E2":1.0, "E1":1.0, "C":1.0}
+            #for key in scale.keys():
+            #    base_scale[key] = scale[key]
+            #    name = "scale_"+key+"_plus"
+            #    my_config = config.build_config(run, tracker, name, iteration, currents = base_scale)
+            #    base_scale[key] = 1.0
+            #    do_one(my_config)
+            #my_config = config.build_config(run, tracker, "density_plus", iteration, density = 3.0)
+            #do_one(my_config)
+        for tracker in ["tkd"]:
+            scale = {"C":1.03, }
+            base_scale = {"E2":1.0, "E1":1.0, "C":1.0}
+            for key in scale.keys():
+                base_scale[key] = scale[key]
+                name = "scale_"+key+"_plus"
+                my_config = config.build_config(run, tracker, name, iteration, currents = base_scale)
+                base_scale[key] = 1.0
+                do_one(my_config)
+
+
+        """my_config = config.build_config(run, "tku", "base", iteration)
         do_one(my_config)
         #######continue ## continue if only running tku_base hybrid mc (use this for amplitude/density/frac_emittance corrections from beam) 
         for tracker in ["tku", "tkd"]:
@@ -58,7 +93,7 @@ def main():
                 base_scale[key] = 1.0
                 do_one(my_config)
             my_config = config.build_config(run, tracker, "density_plus", iteration, density = 3.0)
-            do_one(my_config)
+            do_one(my_config)"""
 
 if __name__ == "__main__":
     main()

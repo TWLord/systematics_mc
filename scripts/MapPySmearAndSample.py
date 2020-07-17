@@ -179,8 +179,8 @@ class MapPySmearAndSample(object):
     def sample_distribution(self, pz, tof_dist, tof_offset):
         pz_bin = bisect.bisect_right(self.momentum_bin_lower, pz)-1
         mean, std = tof_dist[pz_bin]
-        print "mean : " + str(mean)
-        print "tof_offset : " + str(tof_offset)
+        #print "mean : " + str(mean)
+        #print "tof_offset : " + str(tof_offset)
         tof = numpy.random.normal(mean+tof_offset, std)
         tof_sp = ROOT.MAUS.TOFSpacePoint()
         tof_sp.SetTime(tof)
